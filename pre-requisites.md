@@ -5,3 +5,7 @@ kubectl
 eksctl 
 
 AWS CLI 
+
+helm
+
+docker
