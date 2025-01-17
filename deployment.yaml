@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: website1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: website1
+  name: deployment-website
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: deployment-website
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: deployment-website
+    spec:
+      containers:
+      - image: kapilramya/static-website:latest
+        imagePullPolicy: Always
+        name: deployment-website
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: website1
+  name: service-website
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: deployment-website
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: website1
+  name: ingress-website
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-website
+              port:
+                number: 80
